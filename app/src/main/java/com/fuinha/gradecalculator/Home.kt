@@ -10,10 +10,21 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import com.fuinha.gradecalculator.models.ModelInterface
+import com.fuinha.gradecalculator.models.SimpleGradeSystem
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.app_bar_home.*
+import kotlinx.android.synthetic.main.content_home.*
 
-open class Home : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+open class Home : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, ModelInterface {
+    val grade = SimpleGradeSystem(this, 0.5, 0.5)
+    var i = 0
+
+    override fun modelUpdated() {
+        text.setText(grade.toString())
+
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,8 +44,14 @@ open class Home : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
     }
 
     private fun doThing() {
-        val i = Intent(this, MainActivity::class.java)
-        startActivity(i)
+        when(i) {
+            0 -> grade.setP1(4.5)
+            1 -> grade.setP2(3.0)
+            2 -> grade.setP3(4.5)
+            3 -> grade.factor = 0.8
+            4 -> grade.targetMedia = 7.0
+        }
+        i++
     }
 
     override fun onBackPressed() {

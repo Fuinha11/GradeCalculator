@@ -3,10 +3,11 @@ package com.fuinha.gradecalculator.models
 /**
  * Created by Fuinha on 15/11/2017.
  */
-class SimpleGradeSystem(private val modelInterface: ModelInterface ?) {
+
+class SimpleGradeSystem(private val modelInterface: ModelInterface?, weighP1:Double = 0.4, weighP2: Double = 0.6) {
     private val minMedia : Double = 4.95
-    private var p1 : Test = Test(0.0, 0.4)
-    private var p2 : Test = Test(0.0, 0.6)
+    private val p1 : Test = Test(0.0, 0.4)
+    private val p2 : Test = Test(0.0, 0.6)
     private var p3 : Test = Test(0.0)
     var factor : Double = 1.0
         set(value){
@@ -14,10 +15,12 @@ class SimpleGradeSystem(private val modelInterface: ModelInterface ?) {
             calculate()
         }
     var media : Double = 0.0
+    var mediaP3 : Double = 0.0
     var targetMedia : Double = 0.0
         set(value) {
             field = value
             hasTarget = true
+            calculate()
         }
     var needP3 : Boolean = false
     var hasP2 : Boolean = false
@@ -25,6 +28,11 @@ class SimpleGradeSystem(private val modelInterface: ModelInterface ?) {
     var hasTarget : Boolean = false
     var p3onP1 : Boolean = false
     var approved : Boolean = true
+
+    init {
+        p1.weigh = weighP1
+        p2.weigh = weighP2
+    }
 
     private fun calculate() {
         if (hasP2) {
@@ -56,7 +64,7 @@ class SimpleGradeSystem(private val modelInterface: ModelInterface ?) {
         if (needP3 && !hasP3) {
             var tempMedia : Double = minMedia
             if (hasTarget) tempMedia = targetMedia
-            media = tempMedia
+            mediaP3 = tempMedia
 
             val onP1 = (tempMedia / factor - p2.getGrade()) / p1.weigh
             val onP2 = (tempMedia / factor - p1.getGrade()) / p2.weigh
@@ -77,17 +85,20 @@ class SimpleGradeSystem(private val modelInterface: ModelInterface ?) {
 
         }
         else if (needP3 && hasP3){
+            var tempMedia : Double = minMedia
+            if (hasTarget) tempMedia = targetMedia
+            mediaP3 = tempMedia
+
             val mediaP1 = factor * (p3.score * p1.weigh + p2.getGrade())
             val mediaP2 = factor * (p1.getGrade() + p3.score * p2.weigh)
 
-            if (mediaP1 > minMedia && mediaP2 > minMedia)
-                approved = false
-            else if (mediaP1 > mediaP2) {
-                media = mediaP1
-                approved = true
+            approved = !(mediaP1 < mediaP3 && mediaP2 < mediaP3)
+
+            if (mediaP1 > mediaP2) {
+                mediaP3 = mediaP1
                 p3onP1 = true
             } else {
-                approved = true
+                mediaP3 = mediaP2
                 p3onP1 = false
             }
         }
@@ -115,36 +126,41 @@ class SimpleGradeSystem(private val modelInterface: ModelInterface ?) {
         return p2.score
     }
 
-    fun getP3():Double {
+    fun setP3(score: Double){
+        p3.score = score
         hasP3 = true
+        calculate()
+    }
+
+    fun getP3():Double {
         return p3.score
     }
 
     override fun toString(): String {
-        var result: String = ""
+        var result = ""
 
-        result += String().format("P1: %.2f * %.2f + ", p1.score, p1.weigh)
-        result += String().format("P2: %.2f * %.2f = ", p2.score, p2.weigh)
-        result += String().format("Media: %.2f \n\n", media)
+        result += "(P1: %.2f * %.2f + ".format(p1.score, p1.weigh)
+        result += "P2: %.2f * %.2f)*%.2f = ".format(p2.score, p2.weigh, factor)
+        result += "Media: %.2f \n\n".format(media)
 
-        if (hasP3) {
+        if (hasP3 || needP3) {
             result += "Precisou de P3\n"
             if (p3onP1) {
-                result += String().format("P3: %.2f * %.2f + ", p3.score, p1.weigh)
-                result += String().format("P2: %.2f * %.2f = ", p2.score, p2.weigh)
-                result += String().format("Media: %.2f \n\n", media)
+                result += "(P3: %.2f * %.2f + ".format(p3.score, p1.weigh)
+                result += "(P2: %.2f * %.2f)*%.2f = ".format(p2.score, p2.weigh, factor)
+                result += "Media: %.2f \n\n".format(mediaP3)
             }
             else {
-                result += String().format("P1: %.2f * %.2f + ", p1.score, p2.weigh)
-                result += String().format("P3: %.2f * %.2f = ", p3.score, p3.weigh)
-                result += String().format("Media: %.2f \n\n", media)
+                result += "(P1: %.2f * %.2f + ".format(p1.score, p1.weigh)
+                result += "P3: %.2f * %.2f)*%.2f = ".format(p3.score, p2.weigh, factor)
+                result += "Media: %.2f \n\n".format(mediaP3)
             }
         }
 
         if (!approved) {
             result += "Impossível aprovação com esses parametros\n"
             if (hasTarget)
-                result += String().format("Media Desejada: %.2f\n\n", targetMedia)
+                result += "Media Desejada: %.2f\n\n".format(targetMedia)
         }
 
         return result
