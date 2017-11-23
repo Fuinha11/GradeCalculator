@@ -4,7 +4,7 @@ package com.fuinha.gradecalculator.models
  * Created by Fuinha on 23/11/2017.
  */
 
-class FeiSimpleGrade(modelInterface: ModelInterface?, weighP1:Double = 0.4, weighP2: Double = 0.6) : FeiGradeModel(modelInterface, weighP1, weighP2) {
+open class FeiSimpleGrade(modelInterface: ModelInterface?, weighP1:Double = 0.4, weighP2: Double = 0.6) : FeiGradeModel(modelInterface, weighP1, weighP2) {
     override fun isReady(): Boolean {
         return hasP1
     }

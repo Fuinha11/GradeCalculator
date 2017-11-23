@@ -1,9 +1,6 @@
 package com.fuinha.gradecalculator
 
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
-import android.support.design.widget.Snackbar
 import android.support.design.widget.NavigationView
 import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
@@ -12,7 +9,6 @@ import android.view.Menu
 import android.view.MenuItem
 import com.fuinha.gradecalculator.models.FeiSimpleGrade
 import com.fuinha.gradecalculator.models.ModelInterface
-import com.fuinha.gradecalculator.models.SimpleGradeSystem
 import kotlinx.android.synthetic.main.activity_home.*
 import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_home.*
@@ -31,6 +27,7 @@ open class Home : AppCompatActivity(), NavigationView.OnNavigationItemSelectedLi
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
         setSupportActionBar(toolbar)
+        val s:String = "geo"
 
         fab.setOnClickListener { view ->
             doThing()
