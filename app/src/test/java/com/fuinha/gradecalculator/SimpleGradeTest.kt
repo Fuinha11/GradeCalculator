@@ -1,7 +1,7 @@
 package com.fuinha.gradecalculator
 
-import android.util.Log
 import com.fuinha.gradecalculator.models.SimpleGradeSystem
+import com.fuinha.gradecalculator.models.FeiSimpleGrade
 import org.junit.Assert
 import org.junit.Test
 
@@ -18,6 +18,8 @@ class SimpleGradeTest{
         gradeSystem.factor = 1.1
         Assert.assertEquals(4.95, gradeSystem.media, 0.01)
         Assert.assertEquals(false, gradeSystem.needP3)
+
+        val fei = FeiSimpleGrade()
     }
 
     @Test

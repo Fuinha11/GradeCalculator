@@ -10,6 +10,7 @@ import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
+import com.fuinha.gradecalculator.models.FeiSimpleGrade
 import com.fuinha.gradecalculator.models.ModelInterface
 import com.fuinha.gradecalculator.models.SimpleGradeSystem
 import kotlinx.android.synthetic.main.activity_home.*
@@ -17,7 +18,7 @@ import kotlinx.android.synthetic.main.app_bar_home.*
 import kotlinx.android.synthetic.main.content_home.*
 
 open class Home : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener, ModelInterface {
-    val grade = SimpleGradeSystem(this, 0.5, 0.5)
+    val grade = FeiSimpleGrade(this)
     var i = 0
 
     override fun modelUpdated() {

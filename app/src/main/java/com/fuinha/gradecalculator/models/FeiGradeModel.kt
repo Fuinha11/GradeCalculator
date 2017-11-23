@@ -1,16 +1,15 @@
 package com.fuinha.gradecalculator.models
 
 /**
- * Created by Fuinha on 15/11/2017.
+ * Created by Fuinha on 23/11/2017.
  */
-
-open class SimpleGradeSystem(private val modelInterface: ModelInterface?, weighP1:Double = 0.4, weighP2: Double = 0.6) {
-    private val minMedia : Double = 4.95
-    private val p1 : Test = Test(0.0, 0.4)
-    private val p2 : Test = Test(0.0, 0.6)
-    private var p3 : Test = Test(0.0)
+abstract class FeiGradeModel(private val modelInterface: ModelInterface?, weighP1:Double = 0.4, weighP2: Double = 0.6){
+    protected val minMedia : Double = 4.95
+    protected val p1 : Test = Test(0.0, 0.4)
+    protected val p2 : Test = Test(0.0, 0.6)
+    protected var p3 : Test = Test(0.0)
     var factor : Double = 1.0
-        set(value){
+        set(value) {
             field = value
             calculate()
         }
@@ -22,9 +21,10 @@ open class SimpleGradeSystem(private val modelInterface: ModelInterface?, weighP
             hasTarget = true
             calculate()
         }
-    var needP3 : Boolean = false
+    var hasP1 : Boolean = false
     var hasP2 : Boolean = false
     var hasP3 : Boolean = false
+    var needP3 : Boolean = false
     var hasTarget : Boolean = false
     var p3onP1 : Boolean = false
     var approved : Boolean = true
@@ -34,10 +34,15 @@ open class SimpleGradeSystem(private val modelInterface: ModelInterface?, weighP
         p2.weigh = weighP2
     }
 
-    open protected fun calculate() {
+    abstract fun calculateGrade(p1:Test, p2:Test):Double
+    abstract fun calculateP2(media:Double):Double
+    abstract fun calculateP3(p3:Test, other:Test, media:Double):Double
+    abstract fun isReady():Boolean
+
+    open fun calculate(){
         if (hasP2) {
 
-            media = factor * (p1.getGrade() + p2.getGrade())
+            media = calculateGrade(p1,p2)
 
             if (hasTarget)
                 needP3 = media < targetMedia
@@ -46,36 +51,27 @@ open class SimpleGradeSystem(private val modelInterface: ModelInterface?, weighP
         }
         else {
 
-            if (hasTarget) {
-                p2.score = (targetMedia / factor - p1.getGrade()) / p2.weigh
-                media = targetMedia
-            }
-            else {
-                p2.score = (minMedia / factor - p1.getGrade()) / p2.weigh
-                media = minMedia
-            }
+            if (hasTarget)
+                p2.score = calculateP2(targetMedia)
+            else
+                p2.score = calculateP2(minMedia)
 
             if (p2.score > 10.0) {
                 p2.score = 10.0
                 needP3 = true
             }
+
+            media = calculateGrade(p1, p2)
         }
 
         if (needP3 && !hasP3) {
             var tempMedia : Double = minMedia
             if (hasTarget) tempMedia = targetMedia
-            mediaP3 = tempMedia
 
-            val onP1 = (tempMedia / factor - p2.getGrade()) / p1.weigh
-            val onP2 = (tempMedia / factor - p1.getGrade()) / p2.weigh
-
+            val onP1 = calculateP3(p1,p2,tempMedia)
+            val onP2 = calculateP3(p2,p1,tempMedia)
 
             p3onP1 = onP1 < onP2
-
-            if (p3onP1)
-                p3 = Test(onP1, p1.weigh)
-            else
-                p3 = Test(onP2, p2.weigh)
 
             if (p3.score > 10.0) {
                 p3.score = 10.0
@@ -83,14 +79,23 @@ open class SimpleGradeSystem(private val modelInterface: ModelInterface?, weighP
             } else
                 approved = true
 
+            if (p3onP1){
+                p3 = Test(onP1, p1.weigh)
+                mediaP3 = calculateGrade(p3,p2)
+            }
+            else {
+                p3 = Test(onP2, p2.weigh)
+                mediaP3 = calculateGrade(p1,p3)
+            }
+
         }
         else if (needP3 && hasP3){
             var tempMedia : Double = minMedia
             if (hasTarget) tempMedia = targetMedia
             mediaP3 = tempMedia
 
-            val mediaP1 = factor * (p3.score * p1.weigh + p2.getGrade())
-            val mediaP2 = factor * (p1.getGrade() + p3.score * p2.weigh)
+            val mediaP1 = calculateGrade(p3,p2)
+            val mediaP2 = calculateGrade(p1,p3)
 
             approved = !(mediaP1 < mediaP3 && mediaP2 < mediaP3)
 
@@ -109,6 +114,7 @@ open class SimpleGradeSystem(private val modelInterface: ModelInterface?, weighP
 
     fun setP1(score: Double){
         p1.score = score
+        hasP1 = true
         calculate()
     }
 
